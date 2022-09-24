@@ -1,0 +1,837 @@
+---
+title: "Data Cleaning and EDA"
+author: "Edudzi"
+date: '2022-03-16'
+output: html_document
+---
+  
+# {r setup, include=FALSE}
+# knitr::opts_chunk$set(echo = TRUE)
+#  
+
+# Load Required Packages
+  
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(dlookr)
+library(skimr)
+library(funModeling)
+library(flextable)
+library(corrplot)
+library(ggstatsplot)
+library(ggcorrplot)
+library(moments)
+library(tree)
+library(Hmisc)
+library(DataExplorer)
+ 
+
+# Data Cleaning
+
+# Load Data into data frame to begin work on 
+  
+df <- read.csv("Loan_Default.csv", na.strings = c("NA", ""))
+ 
+
+# check structure of the data
+  
+str(df)
+ 
+
+# remove certain columns that are either one value throughout (year), or too skewed in the direction of one variable that they would make analysis unfeasible
+  
+loan_df_cleaned <- subset(df, select = -c(year, Secured_by , construction_type,  Security_Type ))
+
+str(loan_df_cleaned)
+ 
+
+  
+skim(loan_df_cleaned)
+ 
+
+# ID shouldn't be numeric. Change to categorical
+  
+loan_df_cleaned$ID <- as.character(loan_df_cleaned$ID)
+str(loan_df_cleaned)
+ 
+
+
+ 
+
+  
+diagnose(loan_df_cleaned) %>% flextable()
+ 
+
+
+
+
+# Remove all NAs that are categorical variables because attempting to impute missing values with the mode might imbalance the dataset, and I cannot be sure whether the missing data is missing completely at random(MCAR).
+  
+# Remove all categorical NAs
+loan_df_cleaned_subset <- loan_df_cleaned[, c("loan_limit","approv_in_adv", "loan_purpose","Neg_ammortization", "age", "submission_of_application")] # create subset with columns to remove
+
+
+loan_df_cleaned_no_cat_NA <- loan_df_cleaned[complete.cases(loan_df_cleaned_subset),] #Omit NAs based on those columns
+
+
+
+ 
+
+
+
+
+
+  
+str(loan_df_cleaned_no_cat_NA)
+ 
+
+ 
+  
+status(loan_df_cleaned_no_cat_NA) %>% flextable()
+ 
+
+
+
+  
+diagnose(loan_df_cleaned_no_cat_NA) %>% flextable()
+ 
+
+  
+diagnose_numeric(loan_df_cleaned_no_cat_NA) %>% flextable()
+ 
+
+
+
+
+
+
+
+  
+skim(loan_df_cleaned_no_cat_NA)
+ 
+
+
+# impute the NAs in upfront charges by 0 because of their correspondence with the open charge variable. Every nopc value in open_credit corresponds to an NA in  Upfront_charges, but when you have an open credit, the bank may demand a charge from you. I think it will be appropriate to put 0 in place of the NA values
+  
+loan_df_cleaned_no_cat_NA$Upfront_charges <- impute(loan_df_cleaned_no_cat_NA$Upfront_charges, 0)
+ 
+
+
+  
+status(loan_df_cleaned_no_cat_NA) %>% flextable()
+ 
+
+
+# For rate_of_interest and Interest_rate_amount, I will use hot deck imputation, as any other means of imputation will not make sense for these types of columns. Any central tendency or single value imputation will throw values off and completely skew the data.
+
+  
+loan_df_cleaned_no_cat_NA$rate_of_interest <- impute(loan_df_cleaned_no_cat_NA$rate_of_interest, "random")
+loan_df_cleaned_no_cat_NA$Interest_rate_spread <- impute(loan_df_cleaned_no_cat_NA$Interest_rate_spread, "random")
+ 
+
+  
+status(loan_df_cleaned_no_cat_NA) %>% flextable()
+ 
+
+
+# The NAs in property_value are heavily linked to pr in occupancy_type. Will use median imputation for that 
+  
+loan_df_cleaned_no_cat_NA$property_value <- impute(loan_df_cleaned_no_cat_NA$property_value, median)
+ 
+
+  
+status(loan_df_cleaned_no_cat_NA) %>% flextable()
+ 
+
+ 
+
+
+# LTV and dtir1 NAs heavily affect the "nopc" records in open_credit. A hot deck imputation will make the most sense for these values.
+# income NAs heavily affect single classes of records in total_units and occupancy_type. A median imputation will make sense for this field.
+  
+loan_df_cleaned_no_cat_NA$LTV <- impute(loan_df_cleaned_no_cat_NA$LTV, "random")
+loan_df_cleaned_no_cat_NA$income <- impute(loan_df_cleaned_no_cat_NA$income, median)
+loan_df_cleaned_no_cat_NA$dtir1 <- impute(loan_df_cleaned_no_cat_NA$dtir1, "random")
+ 
+
+
+  
+status(loan_df_cleaned_no_cat_NA) %>% flextable()
+ 
+
+
+
+
+# For term, imputing their missing values with any measure of central tendency would prove challenging, because such values are given to every person who takes a loan on a case-by-case basis. It would not be wise to impute these values, hence I would remove them.
+
+ 
+
+  
+loan_df_cleaned_subset <- loan_df_cleaned_no_cat_NA[, c("term")]
+
+
+loan_df_cleaned_no_NA <- loan_df_cleaned_no_cat_NA[complete.cases(loan_df_cleaned_subset),]
+ 
+
+
+  
+skim(loan_df_cleaned_no_NA)
+ 
+
+  
+str(loan_df_cleaned_no_NA)
+ 
+
+# Changing all imputed variables back to numeric
+  
+
+
+loan_df_cleaned_no_NA$Upfront_charges <-  as.numeric(loan_df_cleaned_no_NA$Upfront_charges)
+loan_df_cleaned_no_NA$rate_of_interest <-  as.numeric(loan_df_cleaned_no_NA$rate_of_interest)
+loan_df_cleaned_no_NA$Interest_rate_spread <-  as.numeric(loan_df_cleaned_no_NA$Interest_rate_spread)
+loan_df_cleaned_no_NA$property_value <-  as.numeric(loan_df_cleaned_no_NA$property_value)
+loan_df_cleaned_no_NA$LTV <-  as.numeric(loan_df_cleaned_no_NA$LTV)
+loan_df_cleaned_no_NA$income <-  as.numeric(loan_df_cleaned_no_NA$income)
+loan_df_cleaned_no_NA$dtir1 <-  as.numeric(loan_df_cleaned_no_NA$dtir1)
+
+
+ 
+
+
+  
+str(loan_df_cleaned_no_NA)
+ 
+
+
+
+
+
+
+# Changing factored variables to factors
+  
+loan_df_cleaned_no_NA$Gender <-  as.factor(loan_df_cleaned_no_NA$Gender)
+loan_df_cleaned_no_NA$loan_limit <-  as.factor(loan_df_cleaned_no_NA$loan_limit)
+loan_df_cleaned_no_NA$loan_type <-  as.factor(loan_df_cleaned_no_NA$loan_type)
+loan_df_cleaned_no_NA$loan_purpose <-  as.factor(loan_df_cleaned_no_NA$loan_purpose)
+loan_df_cleaned_no_NA$Credit_Worthiness <-  as.factor(loan_df_cleaned_no_NA$Credit_Worthiness)
+loan_df_cleaned_no_NA$credit_type <-  as.factor(loan_df_cleaned_no_NA$credit_type)
+loan_df_cleaned_no_NA$occupancy_type <-  as.factor(loan_df_cleaned_no_NA$occupancy_type)
+loan_df_cleaned_no_NA$co.applicant_credit_type <-  as.factor(loan_df_cleaned_no_NA$co.applicant_credit_type)
+loan_df_cleaned_no_NA$Region <-  as.factor(loan_df_cleaned_no_NA$Region)
+loan_df_cleaned_no_NA$Status <- as.factor(loan_df_cleaned_no_NA$Status)
+loan_df_cleaned_no_NA$term <- as.factor(loan_df_cleaned_no_NA$term)
+loan_df_cleaned_no_NA$age <- as.factor(loan_df_cleaned_no_NA$age)
+loan_df_cleaned_no_NA$submission_of_application <- as.factor(loan_df_cleaned_no_NA$submission_of_application)
+ 
+
+
+  
+str(loan_df_cleaned_no_NA)
+ 
+
+
+  
+diagnose_category(loan_df_cleaned_no_NA) %>% flextable()
+ 
+
+
+
+# Changing yes/no variables to true/false
+  
+loan_df_cleaned_no_NA$Neg_ammortization <- ifelse(loan_df_cleaned_no_NA$Neg_ammortization == "neg_amm", TRUE , FALSE )
+loan_df_cleaned_no_NA$interest_only <- ifelse(loan_df_cleaned_no_NA$interest_only == "int_only", TRUE , FALSE )
+loan_df_cleaned_no_NA$lump_sum_payment <- ifelse(loan_df_cleaned_no_NA$lump_sum_payment == "lpsm", TRUE , FALSE )
+loan_df_cleaned_no_NA$business_or_commercial <- ifelse(loan_df_cleaned_no_NA$business_or_commercial == "b/c", TRUE , FALSE )
+loan_df_cleaned_no_NA$open_credit <- ifelse(loan_df_cleaned_no_NA$open_credit == "opc", TRUE , FALSE )
+loan_df_cleaned_no_NA$approv_in_adv <- ifelse(loan_df_cleaned_no_NA$approv_in_adv == "pre", TRUE , FALSE )
+ 
+
+
+
+
+  
+str(loan_df_cleaned_no_NA)
+ 
+
+
+# Change the total_units column's "1U", "2U", etc, to raw numbers alone
+  
+library(stringr)
+
+total_units_num <- as.integer(str_replace(loan_df_cleaned_no_NA$total_units, "U", ""))
+
+loan_df_cleaned_no_NA$total_units <- total_units_num
+ 
+
+  
+loan_df_cleaned_no_NA$total_units <- as.factor(loan_df_cleaned_no_NA$total_units)
+ 
+
+
+  
+str(loan_df_cleaned_no_NA)
+ 
+
+
+
+
+# Saving data to Rda file
+  
+# save(loan_df_cleaned_no_NA, file = "loan_df_no_na1.Rda")
+ 
+
+
+
+# <!--    -->
+#   <!-- load("loan_df_no_na1.Rda") -->
+#   <!--   -->
+  
+  ---
+  
+  
+  
+  
+  
+  
+  
+  # Outlier removal
+    
+diagnose_outlier(loan_df_cleaned_no_NA) %>% flextable()
+
+
+# diagnose_outlier() function from {dlookr} not only counts outliers in every variable using interquartile range method, but also gets their percentages
+ 
+
+
+
+
+
+
+# I will remove outlier values with more than 1% of the values in that column being outliers. This means loan_amount, LTV, dtir1, Upfront_charges, property_value, income are eligible for outlier removal.
+
+
+  
+property_box <- boxplot(loan_df_cleaned_no_NA$property_value, xlab = "property_value")
+upfont_box <- boxplot(loan_df_cleaned_no_NA$Upfront_charges, xlab = "Upfront_charges")
+income_box <- boxplot(loan_df_cleaned_no_NA$income, xlab = "income")
+loan_box <- boxplot(loan_df_cleaned_no_NA$loan_amount, xlab = "loan_amount")
+dtir_box <- boxplot(loan_df_cleaned_no_NA$dtir1, xlab = "dtir1")
+ltv_box <- boxplot(loan_df_cleaned_no_NA$LTV, xlab = "LTV")
+
+ 
+
+
+
+
+# Because income and other economic variables are lognormally distributed instead of normally distributed, it wouldn't make sense to set the outlier bounds to max(Q1 - 1.5IQR) for the lower bound, and min(Q3 + 1.5IQR) for the upper bound.
+# To adjust for the lognormally distributed data, the bounds that will be used are max(Q1 - 2IQR) for the lower bound, and min(Q3 + 2IQR) for the upper bound.
+
+
+  
+summary(loan_df_cleaned_no_NA$property_value)
+property_benchmark <- 598000 + 2* IQR (loan_df_cleaned_no_NA$property_value) 
+property_benchmark  
+
+ 
+
+
+
+  
+summary(loan_df_cleaned_no_NA$Upfront_charges)
+upfront_benchmark <- 3900 + 2* IQR (loan_df_cleaned_no_NA$Upfront_charges)
+upfront_benchmark
+ 
+
+
+  
+summary(loan_df_cleaned_no_NA$income)
+income_benchmark <- 8280 + 2* IQR (loan_df_cleaned_no_NA$income) 
+income_benchmark
+ 
+
+  
+summary(loan_df_cleaned_no_NA$loan_amount)
+amt_benchmark <- 436500 + 2* IQR (loan_df_cleaned_no_NA$loan_amount)
+amt_benchmark
+ 
+
+
+
+  
+# LTV has both lower and upper bound outliers so it is necessary to remove the extreme outliers at both ends
+summary(loan_df_cleaned_no_NA$LTV)
+ltv_benchmark <- 86.184 + 2* IQR (loan_df_cleaned_no_NA$LTV)
+ltv_benchmark
+
+ltv_benchmark2 <- 60.417 - 2* IQR (loan_df_cleaned_no_NA$LTV)
+ltv_benchmark2  
+ 
+
+
+  
+# dtir1 has no upper bound outliers so we only solve for the lower bound outlier
+summary(loan_df_cleaned_no_NA$dtir1)
+# dtir_benchmark <- 45 + 2* IQR (loan_df_cleaned_no_NA$dtir1)
+# dtir_benchmark
+
+
+dtir_benchmark2 <- 31 - 2* IQR (loan_df_cleaned_no_NA$dtir1)
+dtir_benchmark2
+ 
+
+
+
+  
+
+# Changing outlier values to NA before they are removed
+
+
+loan_df_cleaned_no_NA$property_value[loan_df_cleaned_no_NA$property_value > property_benchmark] <- NA
+
+loan_df_cleaned_no_NA$Upfront_charges[loan_df_cleaned_no_NA$Upfront_charges > upfront_benchmark] <- NA
+
+loan_df_cleaned_no_NA$income[loan_df_cleaned_no_NA$income > income_benchmark] <- NA
+
+loan_df_cleaned_no_NA$loan_amount[loan_df_cleaned_no_NA$loan_amount > amt_benchmark] <- NA
+
+loan_df_cleaned_no_NA$LTV[loan_df_cleaned_no_NA$LTV > ltv_benchmark] <- NA
+
+# loan_df_cleaned_no_NA$dtir1[loan_df_cleaned_no_NA$dtir1 > dtir_benchmark] <- NA
+
+loan_df_cleaned_no_NA$dtir1[loan_df_cleaned_no_NA$dtir1 < dtir_benchmark2] <- NA
+
+ 
+
+  
+status(loan_df_cleaned_no_NA) %>% flextable()
+ 
+
+
+
+  
+summary(loan_df_cleaned_no_NA$property_value)
+ 
+
+
+  
+loan_subset <- loan_df_cleaned_no_NA[, c("property_value","Upfront_charges", "income", "loan_amount", "LTV", "dtir1")] # create subset with columns to remove
+
+
+loan_duplicate <- loan_df_cleaned_no_NA[complete.cases(loan_subset),]
+ 
+
+
+
+
+  
+str(loan_duplicate)
+ 
+ 
+ 
+  
+diagnose_outlier(loan_duplicate) %>% flextable()
+ 
+ 
+
+  
+ loan_df_cleaned_no_outlier <- loan_duplicate
+ 
+
+
+  
+# Create a data frame of only numeric values to use for PCA
+num_df <- (select_if(loan_df_cleaned_no_outlier, is.numeric))
+
+ 
+ 
+
+
+
+# EDA
+
+
+# I will do some exploratory data anaylysis. This will consist of plots of categorical variables, checking correlation, plotting the distribution of numerical variables using histograms, and density plots. I will also use Q-Q plots to check for normality in the data.
+
+  
+summary(loan_df_cleaned_no_outlier) 
+ 
+
+
+
+## Status:
+  
+ggplot(loan_df_cleaned_no_outlier  , aes((x=Status),fill= Status ))+geom_bar()+ ggtitle("Bar plot of 'Status'")
+ 
+
+
+## loan_limit
+  
+ggplot(loan_df_cleaned_no_outlier)+ geom_bar(aes(x=loan_limit), fill="blue")
+ 
+
+  
+ggplot(loan_df_cleaned_no_outlier , aes((x=loan_limit),fill= Status ))+geom_bar()+ labs(title = "loan_limit vs Status",
+         x = "loan_limit",
+         y = "Status")+theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+ 
+
+
+## Gender
+
+  
+ggplot(loan_df_cleaned_no_outlier)+ geom_bar(aes(x=Gender), fill="blue")
+ 
+
+  
+ggplot(loan_df_cleaned_no_outlier , aes((x=Gender),fill= Status ))+geom_bar()+ labs(title = "Gender vs Status",
+         x = "Gender",
+         y = "Status")+theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+ 
+
+
+## loan_type
+  
+ggplot(loan_df_cleaned_no_outlier)+ geom_bar(aes(x=loan_type), fill="blue")
+ 
+  
+ggplot(loan_df_cleaned_no_outlier , aes((x=loan_type),fill= Status ))+geom_bar()+ labs(title = "loan_type vs Status",
+         x = "loan_type",
+         y = "Status")+theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+ 
+
+## loan_purpose
+  
+ggplot(loan_df_cleaned_no_outlier)+ geom_bar(aes(x=loan_purpose), fill="blue")
+ 
+
+  
+ggplot(loan_df_cleaned_no_outlier , aes((x=loan_purpose),fill= Status ))+geom_bar()+labs(title = "loan_purpose vs Status",
+         x = "loan_purpose",
+         y = "Status") +theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+ 
+## occupancy type
+
+  
+ggplot(loan_df_cleaned_no_outlier)+ geom_bar(aes(x=occupancy_type), fill="blue")
+ 
+  
+ggplot(loan_df_cleaned_no_outlier , aes((x=occupancy_type),fill= Status ))+geom_bar()+labs(title = "occupancy_type vs Status",
+         x = "occupancy_type",
+         y = "Status") +theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+ 
+
+## Region
+
+  
+ggplot(loan_df_cleaned_no_outlier)+ geom_bar(aes(x=Region), fill="blue")
+ 
+
+  
+ggplot(loan_df_cleaned_no_outlier , aes((x=Region),fill= Status ))+geom_bar()+labs(title = "Region vs Status",
+         x = "Region",
+         y = "Status") +theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+ 
+
+
+
+
+
+
+
+  
+plot_correlate(loan_df_cleaned_no_outlier)
+ 
+# property_value and loan_amount seem to have the highest correlation among the variables. This type of correlation is not detrimental to the dataset, as the amount given for a loan is typically correlated with the property value.
+
+
+
+
+
+
+
+
+  
+
+hist(loan_df_cleaned_no_outlier[, 10], main = names(loan_df_cleaned_no_outlier)[10], xlab = names(loan_df_cleaned_no_outlier)[10])
+hist(loan_df_cleaned_no_outlier[, 11], main = names(loan_df_cleaned_no_outlier)[11], xlab = names(loan_df_cleaned_no_outlier)[11])
+hist(loan_df_cleaned_no_outlier[, 12], main = names(loan_df_cleaned_no_outlier)[12], xlab = names(loan_df_cleaned_no_outlier)[12])
+hist(loan_df_cleaned_no_outlier[, 13], main = names(loan_df_cleaned_no_outlier)[13], xlab = names(loan_df_cleaned_no_outlier)[13])
+# hist(loan_df_cleaned_no_NA[, 14], main = names(loan_df_cleaned_no_NA)[14], xlab = names(loan_df_cleaned_no_NA)[14])
+hist(loan_df_cleaned_no_outlier[, 18], main = names(loan_df_cleaned_no_outlier)[18], xlab = names(loan_df_cleaned_no_outlier)[18])
+# hist(loan_df_cleaned_no_NA[, 20], main = names(loan_df_cleaned_no_NA)[20], xlab = names(loan_df_cleaned_no_NA)[20])
+hist(loan_df_cleaned_no_outlier[, 21], main = names(loan_df_cleaned_no_outlier)[21], xlab = names(loan_df_cleaned_no_outlier)[21])
+hist(loan_df_cleaned_no_outlier[, 23], main = names(loan_df_cleaned_no_outlier)[23], xlab = names(loan_df_cleaned_no_outlier)[23])
+hist(loan_df_cleaned_no_outlier[, 27], main = names(loan_df_cleaned_no_outlier)[27], xlab = names(loan_df_cleaned_no_outlier)[27])
+# hist(loan_df_cleaned_no_NA[, 29], main = names(loan_df_cleaned_no_NA)[29], xlab = names(loan_df_cleaned_no_NA)[29])
+hist(loan_df_cleaned_no_outlier[, 30], main = names(loan_df_cleaned_no_outlier)[30], xlab = names(loan_df_cleaned_no_outlier)[30])
+
+ 
+
+
+
+  
+plot(density(loan_df_cleaned_no_outlier[, 10]), main = names(loan_df_cleaned_no_outlier)[10], xlab = names(loan_df_cleaned_no_outlier)[10])
+plot(density(loan_df_cleaned_no_outlier[, 11]), main = names(loan_df_cleaned_no_outlier)[11], xlab = names(loan_df_cleaned_no_outlier)[11])
+plot(density(loan_df_cleaned_no_outlier[, 12]), main = names(loan_df_cleaned_no_outlier)[12], xlab = names(loan_df_cleaned_no_outlier)[12])
+plot(density(loan_df_cleaned_no_outlier[, 13]), main = names(loan_df_cleaned_no_outlier)[13], xlab = names(loan_df_cleaned_no_outlier)[13])
+# plot(density(loan_df_cleaned_no_NA[, 14]), main = names(loan_df_cleaned_no_NA)[14], xlab = names(loan_df_cleaned_no_NA)[14])
+plot(density(loan_df_cleaned_no_outlier[, 18]), main = names(loan_df_cleaned_no_outlier)[18], xlab = names(loan_df_cleaned_no_outlier)[18])
+# plot(density(loan_df_cleaned_no_NA[, 20]), main = names(loan_df_cleaned_no_NA)[20], xlab = names(loan_df_cleaned_no_NA)[20])
+plot(density(loan_df_cleaned_no_outlier[, 21]), main = names(loan_df_cleaned_no_outlier)[21], xlab = names(loan_df_cleaned_no_outlier)[21])
+plot(density(loan_df_cleaned_no_outlier[, 23]), main = names(loan_df_cleaned_no_outlier)[23], xlab = names(loan_df_cleaned_no_outlier)[23])
+plot(density(loan_df_cleaned_no_outlier[, 27]), main = names(loan_df_cleaned_no_outlier)[27], xlab = names(loan_df_cleaned_no_outlier)[27])
+# plot(density(loan_df_cleaned_no_NA[, 29]), main = names(loan_df_cleaned_no_NA)[29], xlab = names(loan_df_cleaned_no_NA)[29])
+plot(density(loan_df_cleaned_no_outlier[, 30]), main = names(loan_df_cleaned_no_outlier)[30], xlab = names(loan_df_cleaned_no_outlier)[30])
+ 
+
+  
+qqnorm(loan_df_cleaned_no_outlier[, 10], main = names(loan_df_cleaned_no_outlier)[10])
+qqline(loan_df_cleaned_no_outlier[, 10], col = "red", lwd = 2)
+
+qqnorm(loan_df_cleaned_no_outlier[, 11], main = names(loan_df_cleaned_no_outlier)[11])
+qqline(loan_df_cleaned_no_outlier[, 11], col = "red", lwd = 2)
+
+
+qqnorm(loan_df_cleaned_no_outlier[, 12], main = names(loan_df_cleaned_no_outlier)[12])
+qqline(loan_df_cleaned_no_outlier[, 12], col = "red", lwd = 2)
+
+qqnorm(loan_df_cleaned_no_outlier[, 13], main = names(loan_df_cleaned_no_outlier)[13])
+qqline(loan_df_cleaned_no_outlier[, 13], col = "red", lwd = 2)
+
+
+# qqnorm(loan_df_cleaned_no_NA[, 14], main = names(loan_df_cleaned_no_NA)[14])
+# qqline(loan_df_cleaned_no_NA[, 14], col = "red", lwd = 2)
+
+
+
+qqnorm(loan_df_cleaned_no_outlier[, 18], main = names(loan_df_cleaned_no_outlier)[18])
+qqline(loan_df_cleaned_no_outlier[, 18], col = "red", lwd = 2)
+
+
+# qqnorm(loan_df_cleaned_no_NA[, 20], main = names(loan_df_cleaned_no_NA)[20])
+# qqline(loan_df_cleaned_no_NA[, 20], col = "red", lwd = 2)
+
+qqnorm(loan_df_cleaned_no_outlier[, 21], main = names(loan_df_cleaned_no_outlier)[21])
+qqline(loan_df_cleaned_no_outlier[, 21], col = "red", lwd = 2)
+
+qqnorm(loan_df_cleaned_no_outlier[, 23], main = names(loan_df_cleaned_no_outlier)[23])
+qqline(loan_df_cleaned_no_outlier[, 23], col = "red", lwd = 2)
+
+qqnorm(loan_df_cleaned_no_outlier[, 27], main = names(loan_df_cleaned_no_outlier)[27])
+qqline(loan_df_cleaned_no_outlier[, 27], col = "red", lwd = 2)
+
+# qqnorm(loan_df_cleaned_no_NA[, 29], main = names(loan_df_cleaned_no_NA)[29])
+# qqline(loan_df_cleaned_no_NA[, 29], col = "red", lwd = 2)
+
+qqnorm(loan_df_cleaned_no_outlier[, 30], main = names(loan_df_cleaned_no_outlier)[30])
+qqline(loan_df_cleaned_no_outlier[, 30], col = "red", lwd = 2)
+
+
+ 
+
+
+
+
+  
+# Tests of skewness loan_amount
+skewness(loan_df_cleaned_no_outlier[, 10])
+# agostino.test(loan_df_cleaned_no_NA[, 10])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 10])
+
+# Tests of skewness rate_of_interest
+skewness(loan_df_cleaned_no_outlier[, 11])
+# agostino.test(loan_df_cleaned_no_NA[, 11])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 11])
+
+
+# Tests of skewness interest_rate_spread
+skewness(loan_df_cleaned_no_outlier[, 12])
+# agostino.test(loan_df_cleaned_no_NA[, 12])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 12])
+
+# Tests of skewness upfront_charges
+skewness(loan_df_cleaned_no_outlier[, 13])
+# agostino.test(loan_df_cleaned_no_NA[, 13])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 13])
+
+
+# Tests of skewness
+# skewness(loan_df_cleaned_no_NA[, 14])
+# # agostino.test(loan_df_cleaned_no_NA[, 14])
+# # Test of kurtosis
+# anscombe.test(loan_df_cleaned_no_NA[, 14])
+
+# Tests of skewness property_value
+skewness(loan_df_cleaned_no_outlier[, 18])
+# agostino.test(loan_df_cleaned_no_NA[, 18])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 18])
+
+# Tests of skewness
+# skewness(loan_df_cleaned_no_NA[, 20])
+# # agostino.test(loan_df_cleaned_no_NA[, 20])
+# # Test of kurtosis
+# anscombe.test(loan_df_cleaned_no_NA[, 20])
+
+# Tests of skewness income
+skewness(loan_df_cleaned_no_outlier[, 21])
+# agostino.test(loan_df_cleaned_no_NA[, 21])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 21])
+
+# Tests of skewness credit_score
+skewness(loan_df_cleaned_no_outlier[, 23])
+# agostino.test(loan_df_cleaned_no_NA[, 23])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 23])
+
+
+# Tests of skewness LTV
+skewness(loan_df_cleaned_no_outlier[, 27])
+# agostino.test(loan_df_cleaned_no_NA[, 27])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 27])
+
+
+# Tests of skewness
+# skewness(loan_df_cleaned_no_NA[, 29])
+# # agostino.test(loan_df_cleaned_no_NA[, 29])
+# # Test of kurtosis
+# anscombe.test(loan_df_cleaned_no_NA[, 29])
+
+
+# Tests of skewness dtir1
+skewness(loan_df_cleaned_no_outlier[, 30])
+# agostino.test(loan_df_cleaned_no_NA[, 30])
+# Test of kurtosis
+anscombe.test(loan_df_cleaned_no_outlier[, 30])
+
+
+ 
+ # From the kurtosis tests, we see that none of these numerical variables are normally distributed
+ 
+
+
+# Principal Component Analysis
+  
+
+pc_loan <- prcomp(num_df, center = T, scale. = T)
+ 
+
+
+  
+# calculate the proportion of explained variance (PEV) from the std values
+pc_loan_var <- pc_loan$sdev^2
+pc_loan_var
+pc_loan_PEV <- pc_loan_var / sum(pc_loan_var)
+pc_loan_PEV
+
+plot(pc_loan)
+
+# plot the cumulative value of PEV for increasing number of additional PCs
+#   note: add an 80% threshold line to inform the feature extraction
+#     according to the plot the first 5 PCs should be selected
+opar <- par(no.readonly = TRUE)
+par(mfrow = c(1,1))
+plot(
+  cumsum(pc_loan_PEV),
+  ylim = c(0,1),
+  xlab = 'PC',
+  ylab = 'cumulative PEV',
+  pch = 20,
+  col = 'orange'
+)
+abline(h = 0.8, col = 'red', lty = 'dashed')
+par(opar)
+
+ 
+
+  
+summary(pc_loan)
+ 
+
+
+
+  
+important_principal_components <- c('PC1', 'PC2', 'PC3', 'PC4', 'PC5')
+pc_loan_df <- as.data.frame(pc_loan$x)
+pc_loan_df <- pc_loan_df[, important_principal_components]
+ 
+
+
+  
+pc_loan_df
+ 
+
+
+
+  
+dim(loan_df_cleaned_no_outlier)
+dim(num_df)
+ 
+
+
+
+  
+loan_df_with_pc <- subset(loan_df_cleaned_no_outlier, select = -c(loan_amount, rate_of_interest, Interest_rate_spread, Upfront_charges, property_value, income, Credit_Score, LTV, dtir1))
+
+loan_df_with_pc$PC1 <- pc_loan_df$PC1 
+loan_df_with_pc$PC2 <- pc_loan_df$PC2
+loan_df_with_pc$PC3 <- pc_loan_df$PC3
+loan_df_with_pc$PC4 <- pc_loan_df$PC4
+loan_df_with_pc$PC5 <- pc_loan_df$PC5
+ 
+
+
+  
+dim(loan_df_with_pc)
+ 
+
+
+  
+colnames(loan_df_with_pc)
+ 
+ 
+ 
+ 
+  
+table(loan_df_with_pc$Status)
+ 
+ 
+  
+# save(loan_df_with_pc, file="PCA_loan_df.Rda")
+ 
+ 
+# ML
+# Removing the ID column as it would not play a part in the prediction (it is just an identifier)
+  
+loan_df_with_pc <- subset(loan_df_with_pc, select = -c(ID))
+ 
+
+  
+str(loan_df_with_pc)
+ 
+
+# Saving the data frame to .Rda format - for machine learning
+# It has been commented out because the files were created previously.
+  
+# save(loan_df_with_pc, file="loan_df_ml.Rda")
+ 
+
+
+
+
+# Saving the data frame to .csv format so that we may use it for deep learning.
+  
+# write.csv(loan_df_with_pc, "loan_df_with_pc.csv")
+ 
+ 
+ 
+ 
+ 
+ 
