@@ -1,0 +1,26 @@
+Confusion Matrix and Statistics
+
+             
+ctree.predict     0     1
+            0 29494  3676
+            1   847  6407
+                                         
+               Accuracy : 0.8881         
+                 95% CI : (0.885, 0.8912)
+    No Information Rate : 0.7506         
+    P-Value [Acc > NIR] : < 2.2e-16      
+                                         
+                  Kappa : 0.6703         
+                                         
+ Mcnemar's Test P-Value : < 2.2e-16      
+                                         
+            Sensitivity : 0.9721         
+            Specificity : 0.6354         
+         Pos Pred Value : 0.8892         
+         Neg Pred Value : 0.8832         
+             Prevalence : 0.7506         
+         Detection Rate : 0.7296         
+   Detection Prevalence : 0.8206         
+      Balanced Accuracy : 0.8038         
+                                         
+       'Positive' Class : 0 
