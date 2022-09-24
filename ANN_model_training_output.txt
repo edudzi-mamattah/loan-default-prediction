@@ -1,0 +1,168 @@
+Model: "sequential_5"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ dense_10 (Dense)            (None, 1024)              25600     
+                                                                 
+ activation_10 (Activation)  (None, 1024)              0         
+                                                                 
+ dense_11 (Dense)            (None, 2)                 2050      
+                                                                 
+ activation_11 (Activation)  (None, 2)                 0         
+                                                                 
+=================================================================
+Total params: 27,650
+Trainable params: 27,650
+Non-trainable params: 0
+_________________________________________________________________
+Epoch 1/75
+91/91 - 2s - loss: 0.5432 - acc: 0.7481 - 2s/epoch - 19ms/step
+Epoch 2/75
+91/91 - 1s - loss: 0.5289 - acc: 0.7512 - 1s/epoch - 15ms/step
+Epoch 3/75
+91/91 - 1s - loss: 0.5272 - acc: 0.7524 - 1s/epoch - 14ms/step
+Epoch 4/75
+91/91 - 1s - loss: 0.5260 - acc: 0.7526 - 1s/epoch - 12ms/step
+Epoch 5/75
+91/91 - 1s - loss: 0.5237 - acc: 0.7545 - 1s/epoch - 12ms/step
+Epoch 6/75
+91/91 - 1s - loss: 0.5220 - acc: 0.7543 - 1s/epoch - 12ms/step
+Epoch 7/75
+91/91 - 1s - loss: 0.5232 - acc: 0.7536 - 1s/epoch - 12ms/step
+Epoch 8/75
+91/91 - 1s - loss: 0.5241 - acc: 0.7537 - 1s/epoch - 13ms/step
+Epoch 9/75
+91/91 - 1s - loss: 0.5210 - acc: 0.7560 - 1s/epoch - 12ms/step
+Epoch 10/75
+91/91 - 1s - loss: 0.5238 - acc: 0.7542 - 1s/epoch - 14ms/step
+Epoch 11/75
+91/91 - 1s - loss: 0.5250 - acc: 0.7535 - 1s/epoch - 15ms/step
+Epoch 12/75
+91/91 - 1s - loss: 0.5241 - acc: 0.7549 - 1s/epoch - 12ms/step
+Epoch 13/75
+91/91 - 1s - loss: 0.5225 - acc: 0.7538 - 1s/epoch - 12ms/step
+Epoch 14/75
+91/91 - 1s - loss: 0.5208 - acc: 0.7546 - 1s/epoch - 12ms/step
+Epoch 15/75
+91/91 - 1s - loss: 0.5218 - acc: 0.7548 - 1s/epoch - 12ms/step
+Epoch 16/75
+91/91 - 1s - loss: 0.5240 - acc: 0.7542 - 1s/epoch - 12ms/step
+Epoch 17/75
+91/91 - 1s - loss: 0.5223 - acc: 0.7549 - 1s/epoch - 13ms/step
+Epoch 18/75
+91/91 - 1s - loss: 0.5224 - acc: 0.7537 - 1s/epoch - 13ms/step
+Epoch 19/75
+91/91 - 1s - loss: 0.5225 - acc: 0.7537 - 1s/epoch - 13ms/step
+Epoch 20/75
+91/91 - 1s - loss: 0.5234 - acc: 0.7538 - 1s/epoch - 13ms/step
+Epoch 21/75
+91/91 - 1s - loss: 0.5241 - acc: 0.7536 - 1s/epoch - 12ms/step
+Epoch 22/75
+91/91 - 1s - loss: 0.5224 - acc: 0.7541 - 1s/epoch - 14ms/step
+Epoch 23/75
+91/91 - 1s - loss: 0.5222 - acc: 0.7541 - 1s/epoch - 14ms/step
+Epoch 24/75
+91/91 - 1s - loss: 0.5222 - acc: 0.7548 - 1s/epoch - 14ms/step
+Epoch 25/75
+91/91 - 1s - loss: 0.5227 - acc: 0.7549 - 1s/epoch - 12ms/step
+Epoch 26/75
+91/91 - 1s - loss: 0.5231 - acc: 0.7539 - 1s/epoch - 12ms/step
+Epoch 27/75
+91/91 - 1s - loss: 0.5249 - acc: 0.7534 - 1s/epoch - 14ms/step
+Epoch 28/75
+91/91 - 1s - loss: 0.5238 - acc: 0.7530 - 1s/epoch - 13ms/step
+Epoch 29/75
+91/91 - 1s - loss: 0.5232 - acc: 0.7540 - 1s/epoch - 13ms/step
+Epoch 30/75
+91/91 - 1s - loss: 0.5256 - acc: 0.7537 - 1s/epoch - 14ms/step
+Epoch 31/75
+91/91 - 1s - loss: 0.5248 - acc: 0.7544 - 1s/epoch - 14ms/step
+Epoch 32/75
+91/91 - 1s - loss: 0.5236 - acc: 0.7539 - 1s/epoch - 13ms/step
+Epoch 33/75
+91/91 - 1s - loss: 0.5226 - acc: 0.7554 - 1s/epoch - 13ms/step
+Epoch 34/75
+91/91 - 1s - loss: 0.5230 - acc: 0.7555 - 1s/epoch - 14ms/step
+Epoch 35/75
+91/91 - 1s - loss: 0.5226 - acc: 0.7553 - 1s/epoch - 14ms/step
+Epoch 36/75
+91/91 - 1s - loss: 0.5258 - acc: 0.7546 - 1s/epoch - 15ms/step
+Epoch 37/75
+91/91 - 1s - loss: 0.5259 - acc: 0.7540 - 1s/epoch - 13ms/step
+Epoch 38/75
+91/91 - 1s - loss: 0.5216 - acc: 0.7551 - 1s/epoch - 13ms/step
+Epoch 39/75
+91/91 - 1s - loss: 0.5249 - acc: 0.7539 - 1s/epoch - 12ms/step
+Epoch 40/75
+91/91 - 1s - loss: 0.5213 - acc: 0.7548 - 1s/epoch - 12ms/step
+Epoch 41/75
+91/91 - 1s - loss: 0.5229 - acc: 0.7547 - 1s/epoch - 12ms/step
+Epoch 42/75
+91/91 - 1s - loss: 0.5226 - acc: 0.7553 - 1s/epoch - 13ms/step
+Epoch 43/75
+91/91 - 1s - loss: 0.5247 - acc: 0.7543 - 1s/epoch - 13ms/step
+Epoch 44/75
+91/91 - 1s - loss: 0.5249 - acc: 0.7543 - 1s/epoch - 12ms/step
+Epoch 45/75
+91/91 - 1s - loss: 0.5250 - acc: 0.7540 - 1s/epoch - 14ms/step
+Epoch 46/75
+91/91 - 1s - loss: 0.5242 - acc: 0.7550 - 1s/epoch - 13ms/step
+Epoch 47/75
+91/91 - 1s - loss: 0.5261 - acc: 0.7528 - 1s/epoch - 12ms/step
+Epoch 48/75
+91/91 - 1s - loss: 0.5286 - acc: 0.7526 - 1s/epoch - 14ms/step
+Epoch 49/75
+91/91 - 1s - loss: 0.5273 - acc: 0.7523 - 1s/epoch - 14ms/step
+Epoch 50/75
+91/91 - 1s - loss: 0.5274 - acc: 0.7528 - 1s/epoch - 12ms/step
+Epoch 51/75
+91/91 - 1s - loss: 0.5263 - acc: 0.7527 - 1s/epoch - 12ms/step
+Epoch 52/75
+91/91 - 1s - loss: 0.5245 - acc: 0.7530 - 1s/epoch - 13ms/step
+Epoch 53/75
+91/91 - 1s - loss: 0.5281 - acc: 0.7524 - 1s/epoch - 12ms/step
+Epoch 54/75
+91/91 - 1s - loss: 0.5261 - acc: 0.7536 - 1s/epoch - 15ms/step
+Epoch 55/75
+91/91 - 1s - loss: 0.5235 - acc: 0.7550 - 1s/epoch - 14ms/step
+Epoch 56/75
+91/91 - 1s - loss: 0.5262 - acc: 0.7535 - 1s/epoch - 13ms/step
+Epoch 57/75
+91/91 - 1s - loss: 0.5273 - acc: 0.7527 - 1s/epoch - 14ms/step
+Epoch 58/75
+91/91 - 1s - loss: 0.5282 - acc: 0.7522 - 1s/epoch - 13ms/step
+Epoch 59/75
+91/91 - 1s - loss: 0.5276 - acc: 0.7534 - 1s/epoch - 12ms/step
+Epoch 60/75
+91/91 - 1s - loss: 0.5267 - acc: 0.7528 - 1s/epoch - 14ms/step
+Epoch 61/75
+91/91 - 1s - loss: 0.5259 - acc: 0.7553 - 1s/epoch - 15ms/step
+Epoch 62/75
+91/91 - 1s - loss: 0.5232 - acc: 0.7541 - 1s/epoch - 14ms/step
+Epoch 63/75
+91/91 - 1s - loss: 0.5231 - acc: 0.7546 - 1s/epoch - 14ms/step
+Epoch 64/75
+91/91 - 1s - loss: 0.5249 - acc: 0.7541 - 1s/epoch - 12ms/step
+Epoch 65/75
+91/91 - 1s - loss: 0.5259 - acc: 0.7540 - 1s/epoch - 12ms/step
+Epoch 66/75
+91/91 - 1s - loss: 0.5270 - acc: 0.7530 - 1s/epoch - 12ms/step
+Epoch 67/75
+91/91 - 1s - loss: 0.5288 - acc: 0.7530 - 1s/epoch - 12ms/step
+Epoch 68/75
+91/91 - 1s - loss: 0.5264 - acc: 0.7540 - 1s/epoch - 13ms/step
+Epoch 69/75
+91/91 - 1s - loss: 0.5290 - acc: 0.7524 - 1s/epoch - 14ms/step
+Epoch 70/75
+91/91 - 1s - loss: 0.5228 - acc: 0.7553 - 1s/epoch - 13ms/step
+Epoch 71/75
+91/91 - 1s - loss: 0.5226 - acc: 0.7553 - 1s/epoch - 14ms/step
+Epoch 72/75
+91/91 - 1s - loss: 0.5246 - acc: 0.7542 - 1s/epoch - 12ms/step
+Epoch 73/75
+91/91 - 1s - loss: 0.5310 - acc: 0.7527 - 1s/epoch - 13ms/step
+Epoch 74/75
+91/91 - 1s - loss: 0.5258 - acc: 0.7549 - 1s/epoch - 13ms/step
+Epoch 75/75
+91/91 - 1s - loss: 0.5258 - acc: 0.7544 - 1s/epoch - 14ms/step
+<keras.callbacks.History at 0x7f0b64710290>
