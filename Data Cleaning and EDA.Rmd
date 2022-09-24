@@ -26,7 +26,6 @@ library(tree)
 library(Hmisc)
 library(DataExplorer)
 ```
-
 # Data Cleaning
 
 Load Data into data frame to begin work on 
@@ -39,7 +38,7 @@ check structure of the data
 str(df)
 ```
 
-remove certain columns that are either one value throughout (year), or too skewed in the direction of one variable that they would make analysis unfeasible
+remove certain columns that are either one value throughout (year), or too skewed in the direction of one variable that they would make analysis infeasible
 ```{r}
  loan_df_cleaned <- subset(df, select = -c(year, Secured_by , construction_type,  Security_Type ))
 
@@ -818,7 +817,6 @@ str(loan_df_with_pc)
 ```
 
 Saving the data frame to .Rda format - for machine learning
-It has been commented out because the files were created previously.
 ```{r}
 # save(loan_df_with_pc, file="loan_df_ml.Rda")
 ```
