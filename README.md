@@ -56,6 +56,13 @@ Likelihood encoding was used to measure the effect between the target variable a
 
 The neural network yielded the following results
 
+![neural-network-results](https://github.com/edudzi-mamattah/loan-default-prediction/blob/main/Neural%20Network%20Results.PNG)
+
+
+
+---
+
+NB: I only kept the structure and hyperparameters of the neural network as it is for educational purposes. I am aware that the model's performance can be greatly improved by tweaking these values.
 
 
 
